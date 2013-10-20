@@ -23,6 +23,7 @@ class TastyResourceFactory
 
 	constructor: (@$http, @_config)->
 		@_config.cache ||= false
+		@_resolved = true
 
 
 	query: (filter, success, error)->
@@ -37,36 +38,61 @@ class TastyResourceFactory
 
 		url = "#{@_config.url}?#{filters.join('&')}" if filters.length > 0
 
-
+		@_resolved = false
 		promise = @$http.get url, cache: @_config.cache
 
 		promise.then (response)=>
 			angular.copy(response.data.objects, results)
 			results.meta = response.data.meta
 
+		promise.then ()=> @_resolved = true
 		promise.then success, error
 		results
 
 
 	get: (id, success, error)->
 		# if id has a leading slash then assume its a resource URI
-		url = if id[0] is "/" then id else "#{@_config.url}#{id}"
+		url = if id[0] is "/" then id else "#{@_config.url}#{id}/"
 
 		resource = new TastyResourceFactory(@$http, @_config)
+
+		@_resolved = false
 		promise = @$http.get url, cache: @_config.cache
 
 		promise.then (response)=>
 			for key, value of response.data
 				resource[key] = value
 
+		promise.then ()=> @_resolved = true
 		promise.then success, error
 		return resource
 
 
 	post: ()->
+		promise = @$http.post @_config.url, @_get_data()
+		promise.then ()=> @_resolved = true
+		return promise
+
+
+	put: (id)->
+		id = @id if not id?
+
+		# if id has a leading slash then assume its a resource URI
+		url = if id[0] is "/" then id else "#{@_config.url}#{id}/"
+
+		promise = @$http.put url, @_get_data()
+		promise.then ()=> @_resolved = true
+		return promise
+
+
+	resolved: ()->
+		@_resolved
+
+
+	_get_data: ()->
 		data = {}
 
-		# get the post data
+		# get the resource data
 		for attr, value of @
 			# filter out class features
 			if typeof value != "function" and attr[0] not in ["$", "_"]
@@ -76,8 +102,7 @@ class TastyResourceFactory
 				else
 					data[attr] = value
 
-		promise = @$http.post @_config.url, data
-		return promise
+		return data
 
 
 

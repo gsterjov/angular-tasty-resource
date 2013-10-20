@@ -8,6 +8,7 @@
       this.$http = $http;
       this._config = _config;
       (_base = this._config).cache || (_base.cache = false);
+      this._resolved = true;
     }
 
     TastyResourceFactory.prototype.query = function(filter, success, error) {
@@ -23,12 +24,16 @@
       if (filters.length > 0) {
         url = "" + this._config.url + "?" + (filters.join('&'));
       }
+      this._resolved = false;
       promise = this.$http.get(url, {
         cache: this._config.cache
       });
       promise.then(function(response) {
         angular.copy(response.data.objects, results);
         return results.meta = response.data.meta;
+      });
+      promise.then(function() {
+        return _this._resolved = true;
       });
       promise.then(success, error);
       return results;
@@ -37,8 +42,9 @@
     TastyResourceFactory.prototype.get = function(id, success, error) {
       var promise, resource, url,
         _this = this;
-      url = id[0] === "/" ? id : "" + this._config.url + id;
+      url = id[0] === "/" ? id : "" + this._config.url + id + "/";
       resource = new TastyResourceFactory(this.$http, this._config);
+      this._resolved = false;
       promise = this.$http.get(url, {
         cache: this._config.cache
       });
@@ -52,12 +58,43 @@
         }
         return _results;
       });
+      promise.then(function() {
+        return _this._resolved = true;
+      });
       promise.then(success, error);
       return resource;
     };
 
     TastyResourceFactory.prototype.post = function() {
-      var attr, data, promise, value, _ref;
+      var promise,
+        _this = this;
+      promise = this.$http.post(this._config.url, this._get_data());
+      promise.then(function() {
+        return _this._resolved = true;
+      });
+      return promise;
+    };
+
+    TastyResourceFactory.prototype.put = function(id) {
+      var promise, url,
+        _this = this;
+      if (id == null) {
+        id = this.id;
+      }
+      url = id[0] === "/" ? id : "" + this._config.url + id + "/";
+      promise = this.$http.put(url, this._get_data());
+      promise.then(function() {
+        return _this._resolved = true;
+      });
+      return promise;
+    };
+
+    TastyResourceFactory.prototype.resolved = function() {
+      return this._resolved;
+    };
+
+    TastyResourceFactory.prototype._get_data = function() {
+      var attr, data, value, _ref;
       data = {};
       for (attr in this) {
         value = this[attr];
@@ -69,8 +106,7 @@
           }
         }
       }
-      promise = this.$http.post(this._config.url, data);
-      return promise;
+      return data;
     };
 
     return TastyResourceFactory;
