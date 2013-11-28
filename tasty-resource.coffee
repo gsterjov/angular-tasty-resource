@@ -85,6 +85,18 @@ class TastyResourceFactory
 		return promise
 
 
+	patch: (id)->
+		id = @id if not id?
+		id = @_config.url if not id?
+
+		# if id has a leading slash then assume its a resource URI
+		url = if id?[0] is "/" then id else "#{@_config.url}#{id}/"
+
+		promise = @$http method: "PATCH", url: url, data: @_get_data()
+		promise.then ()=> @_resolved = true
+		return promise
+
+
 	resolved: ()->
 		@_resolved
 

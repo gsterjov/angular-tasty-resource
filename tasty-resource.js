@@ -89,6 +89,27 @@
       return promise;
     };
 
+    TastyResourceFactory.prototype.patch = function(id) {
+      var promise, url,
+        _this = this;
+      if (id == null) {
+        id = this.id;
+      }
+      if (id == null) {
+        id = this._config.url;
+      }
+      url = (id != null ? id[0] : void 0) === "/" ? id : "" + this._config.url + id + "/";
+      promise = this.$http({
+        method: "PATCH",
+        url: url,
+        data: this._get_data()
+      });
+      promise.then(function() {
+        return _this._resolved = true;
+      });
+      return promise;
+    };
+
     TastyResourceFactory.prototype.resolved = function() {
       return this._resolved;
     };
