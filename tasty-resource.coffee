@@ -19,24 +19,24 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-class TastyResourceFactory
+root = exports ? this
+
+class root.TastyResourceFactory
 
 	constructor: (@$http, @_config)->
 		@_config.cache ||= false
 		@_resolved = true
 
 
-	query: (filter, success, error)->
+	queryURL: (url, parameters, success, error)->
 		results = []
 
-		url = @_config.url
-
 		# construct the filter params
-		filters = []
-		for attr, value of filter
-			filters.push "#{attr}=#{value}"
+		params = []
+		for attr, value of parameters
+			params.push "#{attr}=#{value}"
 
-		url = "#{@_config.url}?#{filters.join('&')}" if filters.length > 0
+		url = "#{url}?#{params.join('&')}" if params.length > 0
 
 		@_resolved = false
 		promise = @$http.get url, cache: @_config.cache
@@ -48,6 +48,10 @@ class TastyResourceFactory
 		promise.then ()=> @_resolved = true
 		promise.then success, error
 		results
+
+
+	query: (filter, success, error)->
+		@queryURL @_config.url, filter, success, error
 
 
 	get: (id, success, error)->
