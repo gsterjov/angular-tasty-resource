@@ -55,11 +55,7 @@ class root.TastyResourceFactory
 
 
 	get: (id, success, error)->
-		url = @_config.url
-		if id?
-			# if id has a leading slash then assume its a resource URI
-			url = if id[0] is "/" then id else "#{@_config.url}#{id}/"
-
+		url = @_get_detail_url id
 		resource = new TastyResourceFactory(@$http, @_config)
 
 		@_resolved = false
@@ -75,30 +71,26 @@ class root.TastyResourceFactory
 
 
 	post: ()->
+		@_resolved = false
 		promise = @$http.post @_config.url, @_get_data()
 		promise.then ()=> @_resolved = true
-		promise.success (response, status, headers)=> @_config.url = headers("Location")
+		promise.success (response, status, headers)=> @_config.detail_url = headers("Location")
 		return promise
 
 
 	put: (id)->
-		id = @id if not id?
+		url = @_get_detail_url id
 
-		# if id has a leading slash then assume its a resource URI
-		url = if id[0] is "/" then id else "#{@_config.url}#{id}/"
-
+		@_resolved = false
 		promise = @$http.put url, @_get_data()
 		promise.then ()=> @_resolved = true
 		return promise
 
 
 	patch: (id)->
-		id = @id if not id?
-		id = @_config.url if not id?
+		url = @_get_detail_url id
 
-		# if id has a leading slash then assume its a resource URI
-		url = if id?[0] is "/" then id else "#{@_config.url}#{id}/"
-
+		@_resolved = false
 		promise = @$http method: "PATCH", url: url, data: @_get_data()
 		promise.then ()=> @_resolved = true
 		return promise
@@ -106,6 +98,20 @@ class root.TastyResourceFactory
 
 	resolved: ()->
 		@_resolved
+
+
+	_get_detail_url: (id)->
+		if not @_config.detail_url?
+			url = @_config.url
+			id = @id if not id?
+
+			# if id has a leading slash then assume its a resource URI
+			if id and id[0] is "/"
+				@_config.detail_url = id
+			else
+				@_config.detail_url = "#{@_config.url}#{id}/"
+
+		return @_config.detail_url
 
 
 	_get_data: ()->

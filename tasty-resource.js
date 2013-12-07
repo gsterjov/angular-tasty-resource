@@ -47,11 +47,10 @@
     TastyResourceFactory.prototype.get = function(id, success, error) {
       var promise, resource, url,
         _this = this;
-      url = this._config.url;
-      if (id != null) {
-        url = id[0] === "/" ? id : "" + this._config.url + id + "/";
-      }
+      url = this._get_detail_url(id);
       resource = new TastyResourceFactory(this.$http, this._config);
+      console.log(url);
+      console.log(this);
       this._resolved = false;
       promise = this.$http.get(url, {
         cache: this._config.cache
@@ -76,12 +75,13 @@
     TastyResourceFactory.prototype.post = function() {
       var promise,
         _this = this;
+      this._resolved = false;
       promise = this.$http.post(this._config.url, this._get_data());
       promise.then(function() {
         return _this._resolved = true;
       });
       promise.success(function(response, status, headers) {
-        return _this._config.url = headers("Location");
+        return _this._config.detail_url = headers("Location");
       });
       return promise;
     };
@@ -89,10 +89,8 @@
     TastyResourceFactory.prototype.put = function(id) {
       var promise, url,
         _this = this;
-      if (id == null) {
-        id = this.id;
-      }
-      url = id[0] === "/" ? id : "" + this._config.url + id + "/";
+      url = this._get_detail_url(id);
+      this._resolved = false;
       promise = this.$http.put(url, this._get_data());
       promise.then(function() {
         return _this._resolved = true;
@@ -103,13 +101,8 @@
     TastyResourceFactory.prototype.patch = function(id) {
       var promise, url,
         _this = this;
-      if (id == null) {
-        id = this.id;
-      }
-      if (id == null) {
-        id = this._config.url;
-      }
-      url = (id != null ? id[0] : void 0) === "/" ? id : "" + this._config.url + id + "/";
+      url = this._get_detail_url(id);
+      this._resolved = false;
       promise = this.$http({
         method: "PATCH",
         url: url,
@@ -123,6 +116,22 @@
 
     TastyResourceFactory.prototype.resolved = function() {
       return this._resolved;
+    };
+
+    TastyResourceFactory.prototype._get_detail_url = function(id) {
+      var url;
+      if (this._config.detail_url == null) {
+        url = this._config.url;
+        if (id == null) {
+          id = this.id;
+        }
+        if (id && id[0] === "/") {
+          this._config.detail_url = id;
+        } else {
+          this._config.detail_url = "" + this._config.url + id + "/";
+        }
+      }
+      return this._config.detail_url;
     };
 
     TastyResourceFactory.prototype._get_data = function() {
