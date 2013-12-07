@@ -47,7 +47,10 @@
     TastyResourceFactory.prototype.get = function(id, success, error) {
       var promise, resource, url,
         _this = this;
-      url = id[0] === "/" ? id : "" + this._config.url + id + "/";
+      url = this._config.url;
+      if (id != null) {
+        url = id[0] === "/" ? id : "" + this._config.url + id + "/";
+      }
       resource = new TastyResourceFactory(this.$http, this._config);
       this._resolved = false;
       promise = this.$http.get(url, {
@@ -76,6 +79,9 @@
       promise = this.$http.post(this._config.url, this._get_data());
       promise.then(function() {
         return _this._resolved = true;
+      });
+      promise.success(function(response, status, headers) {
+        return _this._config.url = headers("Location");
       });
       return promise;
     };

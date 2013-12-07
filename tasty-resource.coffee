@@ -55,8 +55,10 @@ class root.TastyResourceFactory
 
 
 	get: (id, success, error)->
-		# if id has a leading slash then assume its a resource URI
-		url = if id[0] is "/" then id else "#{@_config.url}#{id}/"
+		url = @_config.url
+		if id?
+			# if id has a leading slash then assume its a resource URI
+			url = if id[0] is "/" then id else "#{@_config.url}#{id}/"
 
 		resource = new TastyResourceFactory(@$http, @_config)
 
@@ -75,6 +77,7 @@ class root.TastyResourceFactory
 	post: ()->
 		promise = @$http.post @_config.url, @_get_data()
 		promise.then ()=> @_resolved = true
+		promise.success (response, status, headers)=> @_config.url = headers("Location")
 		return promise
 
 
