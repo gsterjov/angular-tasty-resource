@@ -30,8 +30,12 @@
         cache: this._config.cache
       });
       promise.then(function(response) {
-        angular.copy(response.data.objects, results);
-        return results.meta = response.data.meta;
+        if (response.data.objects != null) {
+          angular.copy(response.data.objects, results);
+          return results.meta = response.data.meta;
+        } else {
+          return angular.copy(response.data, results);
+        }
       });
       promise.then(function() {
         return _this._resolved = true;
@@ -49,8 +53,6 @@
         _this = this;
       url = this._get_detail_url(id);
       resource = new TastyResourceFactory(this.$http, this._config);
-      console.log(url);
-      console.log(this);
       this._resolved = false;
       promise = this.$http.get(url, {
         cache: this._config.cache

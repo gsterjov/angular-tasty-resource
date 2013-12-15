@@ -42,8 +42,11 @@ class root.TastyResourceFactory
 		promise = @$http.get url, cache: @_config.cache
 
 		promise.then (response)=>
-			angular.copy(response.data.objects, results)
-			results.meta = response.data.meta
+			if response.data.objects?
+				angular.copy(response.data.objects, results)
+				results.meta = response.data.meta
+			else
+				angular.copy(response.data, results)
 
 		promise.then ()=> @_resolved = true
 		promise.then success, error
