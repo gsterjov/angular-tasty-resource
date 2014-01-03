@@ -122,16 +122,14 @@
 
     TastyResourceFactory.prototype._get_detail_url = function(id) {
       var url;
-      if (this._config.detail_url == null) {
-        url = this._config.url;
-        if (id == null) {
-          id = this.id;
-        }
-        if (id && id[0] === "/") {
-          this._config.detail_url = id;
-        } else {
-          this._config.detail_url = "" + this._config.url + id + "/";
-        }
+      url = this._config.url;
+      if (id == null) {
+        id = this.id;
+      }
+      if (id && id[0] === "/") {
+        this._config.detail_url = id;
+      } else {
+        this._config.detail_url = "" + this._config.url + id + "/";
       }
       return this._config.detail_url;
     };

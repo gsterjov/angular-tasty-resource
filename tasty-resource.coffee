@@ -104,15 +104,14 @@ class root.TastyResourceFactory
 
 
 	_get_detail_url: (id)->
-		if not @_config.detail_url?
-			url = @_config.url
-			id = @id if not id?
+		url = @_config.url
+		id = @id if not id?
 
-			# if id has a leading slash then assume its a resource URI
-			if id and id[0] is "/"
-				@_config.detail_url = id
-			else
-				@_config.detail_url = "#{@_config.url}#{id}/"
+		# if id has a leading slash then assume its a resource URI
+		if id and id[0] is "/"
+			@_config.detail_url = id
+		else
+			@_config.detail_url = "#{@_config.url}#{id}/"
 
 		return @_config.detail_url
 
