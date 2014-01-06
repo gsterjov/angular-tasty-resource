@@ -30,8 +30,13 @@
         cache: this._config.cache
       });
       promise.then(function(response) {
+        var object, _i, _len, _ref;
         if (response.data.objects != null) {
-          angular.copy(response.data.objects, results);
+          _ref = response.data.objects;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            object = _ref[_i];
+            results.push(_this._create_resource(object));
+          }
           return results.meta = response.data.meta;
         } else {
           return angular.copy(response.data, results);
@@ -148,6 +153,16 @@
         }
       }
       return data;
+    };
+
+    TastyResourceFactory.prototype._create_resource = function(data) {
+      var key, resource, value;
+      resource = new TastyResourceFactory(this.$http, this._config);
+      for (key in data) {
+        value = data[key];
+        resource[key] = value;
+      }
+      return resource;
     };
 
     return TastyResourceFactory;

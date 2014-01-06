@@ -43,7 +43,9 @@ class root.TastyResourceFactory
 
 		promise.then (response)=>
 			if response.data.objects?
-				angular.copy(response.data.objects, results)
+				for object in response.data.objects
+					results.push @_create_resource(object)
+
 				results.meta = response.data.meta
 			else
 				angular.copy(response.data, results)
@@ -130,6 +132,14 @@ class root.TastyResourceFactory
 					data[attr] = value
 
 		return data
+
+
+	_create_resource: (data)->
+		resource = new TastyResourceFactory(@$http, @_config)
+		for key, value of data
+			resource[key] = value
+
+		return resource
 
 
 
